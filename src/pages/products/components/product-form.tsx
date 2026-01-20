@@ -37,7 +37,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     weightKg: product?.weightKg,
     warrantyMonths: product?.warrantyMonths || 12,
     assemblyRequired: product?.assemblyRequired ?? true,
-    imageUrl: product?.imageUrl || "",
+    imageUrls: product?.imageUrls || [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -155,9 +155,9 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
           Imagem do Produto
         </label>
         <ImageUpload
-          value={formData.imageUrl}
-          onChange={(url) =>
-            setFormData((prev) => ({ ...prev, imageUrl: url }))
+          value={formData.imageUrls}
+          onChange={(urls) =>
+            setFormData((prev) => ({ ...prev, imageUrls: urls }))
           }
         />
       </div>

@@ -1,58 +1,78 @@
 import * as React from "react";
-import { HiArrowUpTray, HiXMark, HiPhoto, HiArrowPath } from "react-icons/hi2";
+import { HiXMark, HiPhoto, HiArrowPath, HiPlus } from "react-icons/hi2";
 import { cn } from "@/lib/utils";
 import { storageService } from "@/services/storage.service";
 
 interface ImageUploadProps {
-  value: string;
-  onChange: (url: string) => void;
+  value: string[];
+  onChange: (urls: string[]) => void;
+  maxImages?: number;
   className?: string;
 }
 
-export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
+export function ImageUpload({
+  value = [],
+  onChange,
+  maxImages = 10,
+  className
+}: ImageUploadProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
 
-  const handleFileChange = async (file: File | null) => {
-    if (!file) return;
+  const handleFilesChange = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
 
-    // Validar tipo
-    if (!file.type.startsWith("image/")) {
-      setUploadError("Por favor, selecione apenas arquivos de imagem.");
+    const fileArray = Array.from(files);
+
+    // Validar quantidade
+    if (value.length + fileArray.length > maxImages) {
+      setUploadError(`Máximo de ${maxImages} imagens permitidas.`);
       return;
     }
 
-    // Validar tamanho (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("A imagem deve ter no máximo 5MB.");
-      return;
+    // Validar tipos e tamanhos
+    for (const file of fileArray) {
+      if (!file.type.startsWith("image/")) {
+        setUploadError("Por favor, selecione apenas arquivos de imagem.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError("Cada imagem deve ter no máximo 5MB.");
+        return;
+      }
     }
 
     // Upload para Supabase Storage
     try {
       setIsUploading(true);
       setUploadError(null);
-      const result = await storageService.uploadImage(file);
-      onChange(result.url);
+
+      const uploadPromises = fileArray.map(file => storageService.uploadImage(file));
+      const results = await Promise.all(uploadPromises);
+      const newUrls = results.map(r => r.url);
+
+      onChange([...value, ...newUrls]);
     } catch (error) {
       console.error("Erro no upload:", error);
       setUploadError(
         error instanceof Error
           ? error.message
-          : "Erro ao fazer upload da imagem"
+          : "Erro ao fazer upload das imagens"
       );
     } finally {
       setIsUploading(false);
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    handleFileChange(file);
+    handleFilesChange(e.dataTransfer.files);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -64,80 +84,123 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
     setIsDragging(false);
   };
 
-  const handleRemove = async () => {
-    // Tentar remover do storage se for uma URL do Supabase
-    if (value) {
-      const path = storageService.extractPathFromUrl(value);
-      if (path) {
-        try {
-          await storageService.deleteImage(path);
-        } catch (error) {
-          console.warn("Erro ao remover imagem do storage:", error);
-        }
+  const handleRemove = async (index: number) => {
+    const urlToRemove = value[index];
+
+    // Tentar remover do storage se for URL do Supabase
+    const path = storageService.extractPathFromUrl(urlToRemove);
+    if (path) {
+      try {
+        await storageService.deleteImage(path);
+      } catch (error) {
+        console.warn("Erro ao remover imagem do storage:", error);
       }
     }
 
-    onChange("");
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
+    const newUrls = value.filter((_, i) => i !== index);
+    onChange(newUrls);
   };
 
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    const newUrls = [...value];
+    const [movedItem] = newUrls.splice(fromIndex, 1);
+    newUrls.splice(toIndex, 0, movedItem);
+    onChange(newUrls);
+  };
+
+  const canAddMore = value.length < maxImages;
+
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("space-y-4", className)}>
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
-        onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+        onChange={(e) => handleFilesChange(e.target.files)}
         disabled={isUploading}
       />
 
-      {/* Estado de Upload em progresso */}
-      {isUploading ? (
-        <div className="w-full h-48 rounded-xl border-2 border-dashed border-miranda-accent bg-miranda-accent/10 flex flex-col items-center justify-center gap-3">
-          <div className="p-3 rounded-full bg-miranda-accent/20 text-miranda-accent">
-            <HiArrowPath className="h-6 w-6 animate-spin" />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-medium text-white">
-              Fazendo upload...
-            </p>
-            <p className="text-xs text-white/50 mt-1">
-              Aguarde um momento
-            </p>
-          </div>
-        </div>
-      ) : value ? (
-        // Preview da imagem
-        <div className="relative group rounded-xl overflow-hidden border border-white/20">
-          <img
-            src={value}
-            alt="Preview"
-            className="w-full h-48 object-cover"
-          />
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+      {/* Grid de imagens */}
+      {value.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+          {value.map((url, index) => (
+            <div
+              key={url}
+              className="relative group aspect-square rounded-lg overflow-hidden border border-white/20 bg-white/5"
+            >
+              <img
+                src={url}
+                alt={`Imagem ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+
+              {/* Overlay com ações */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => moveImage(index, index - 1)}
+                    className="p-1.5 rounded bg-white/20 hover:bg-white/30 text-white text-xs"
+                    title="Mover para esquerda"
+                  >
+                    ←
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemove(index)}
+                  className="p-1.5 rounded bg-destructive/80 hover:bg-destructive text-white"
+                  title="Remover"
+                >
+                  <HiXMark className="h-4 w-4" />
+                </button>
+                {index < value.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => moveImage(index, index + 1)}
+                    className="p-1.5 rounded bg-white/20 hover:bg-white/30 text-white text-xs"
+                    title="Mover para direita"
+                  >
+                    →
+                  </button>
+                )}
+              </div>
+
+              {/* Badge de imagem principal */}
+              {index === 0 && (
+                <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-miranda-primary text-white text-[10px] font-medium rounded">
+                  Principal
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Botão de adicionar mais */}
+          {canAddMore && !isUploading && (
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
-              aria-label="Trocar imagem"
+              className="aspect-square rounded-lg border-2 border-dashed border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center gap-1 transition-colors"
             >
-              <HiArrowUpTray className="h-5 w-5" />
+              <HiPlus className="h-6 w-6 text-white/60" />
+              <span className="text-[10px] text-white/50">Adicionar</span>
             </button>
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="p-2 rounded-lg bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors"
-              aria-label="Remover imagem"
-            >
-              <HiXMark className="h-5 w-5" />
-            </button>
-          </div>
+          )}
         </div>
-      ) : (
-        // Área de upload
+      )}
+
+      {/* Estado de Upload em progresso */}
+      {isUploading && (
+        <div className="flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-miranda-accent/10 border border-miranda-accent/30">
+          <HiArrowPath className="h-5 w-5 animate-spin text-miranda-accent" />
+          <span className="text-sm text-white">Fazendo upload...</span>
+        </div>
+      )}
+
+      {/* Área de upload inicial (quando não há imagens) */}
+      {value.length === 0 && !isUploading && (
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
@@ -145,7 +208,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={cn(
-            "w-full h-48 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all duration-300 cursor-pointer",
+            "w-full h-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all duration-300 cursor-pointer",
             isDragging
               ? "border-miranda-accent bg-miranda-accent/10"
               : "border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10"
@@ -163,10 +226,10 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
           </div>
           <div className="text-center">
             <p className="text-sm font-medium text-white">
-              {isDragging ? "Solte a imagem aqui" : "Clique ou arraste uma imagem"}
+              {isDragging ? "Solte as imagens aqui" : "Clique ou arraste imagens"}
             </p>
             <p className="text-xs text-white/50 mt-1">
-              PNG, JPG ou WebP até 5MB
+              PNG, JPG ou WebP até 5MB (máx. {maxImages} imagens)
             </p>
           </div>
         </button>
@@ -174,8 +237,15 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
 
       {/* Mensagem de erro */}
       {uploadError && (
-        <p className="mt-2 text-sm text-destructive text-center">
+        <p className="text-sm text-destructive text-center">
           {uploadError}
+        </p>
+      )}
+
+      {/* Info */}
+      {value.length > 0 && (
+        <p className="text-xs text-white/50 text-center">
+          {value.length} de {maxImages} imagens • A primeira é a imagem principal
         </p>
       )}
     </div>

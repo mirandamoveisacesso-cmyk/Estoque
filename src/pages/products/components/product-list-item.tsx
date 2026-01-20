@@ -21,9 +21,9 @@ export function ProductListItem({ product, onEdit, onDelete }: ProductListItemPr
     <div className="group flex items-center gap-4 p-4 bg-lovely-primary/30 rounded-xl border border-lovely-secondary/10 hover:border-lovely-secondary/30 hover:bg-lovely-primary/50 transition-colors duration-300">
       {/* Imagem Thumbnail */}
       <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden bg-lovely-secondary/5">
-        {product.imageUrl ? (
+        {product.imageUrls[0] ? (
           <img
-            src={product.imageUrl}
+            src={product.imageUrls[0]}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />

@@ -27,7 +27,7 @@ export interface Product {
   weightKg?: number; // Novo: peso em kg
   warrantyMonths?: number; // Novo: garantia em meses
   assemblyRequired?: boolean; // Novo: requer montagem
-  imageUrl: string;
+  imageUrls: string[]; // Múltiplas imagens
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,7 +44,7 @@ export interface ProductFormData {
   weightKg?: number;
   warrantyMonths?: number;
   assemblyRequired?: boolean;
-  imageUrl: string;
+  imageUrls: string[]; // Múltiplas imagens
 }
 
 interface ProductsContextType {
@@ -75,7 +75,7 @@ function toProduct(p: ProductWithRelations): Product {
     weightKg: p.weight_kg ?? undefined,
     warrantyMonths: p.warranty_months ?? undefined,
     assemblyRequired: p.assembly_required,
-    imageUrl: p.image_url || "",
+    imageUrls: p.image_url ? [p.image_url] : [], // Compatibilidade com campo único
     createdAt: new Date(p.created_at),
     updatedAt: new Date(p.updated_at),
   };
@@ -120,7 +120,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           description: data.description,
           price: data.price,
           discountPrice: data.discountPrice,
-          imageUrl: data.imageUrl,
+          imageUrl: data.imageUrls[0] || "",
           weightKg: data.weightKg,
           warrantyMonths: data.warrantyMonths,
           assemblyRequired: data.assemblyRequired,
@@ -149,7 +149,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           description: data.description,
           price: data.price,
           discountPrice: data.discountPrice,
-          imageUrl: data.imageUrl,
+          imageUrl: data.imageUrls[0] || "",
           weightKg: data.weightKg,
           warrantyMonths: data.warrantyMonths,
           assemblyRequired: data.assemblyRequired,
