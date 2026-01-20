@@ -1,7 +1,7 @@
 import * as React from "react";
 import { HiArrowUpTray, HiXMark, HiPhoto, HiArrowPath } from "react-icons/hi2";
 import { cn } from "@/lib/utils";
-import { cloudinaryService } from "@/services/cloudinary.service";
+import { storageService } from "@/services/storage.service";
 
 interface ImageUploadProps {
   value: string;
@@ -30,12 +30,12 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
       return;
     }
 
-    // Upload para Cloudinary
+    // Upload para Supabase Storage
     try {
       setIsUploading(true);
       setUploadError(null);
-      const result = await cloudinaryService.uploadImage(file);
-      onChange(result.secure_url);
+      const result = await storageService.uploadImage(file);
+      onChange(result.url);
     } catch (error) {
       console.error("Erro no upload:", error);
       setUploadError(
@@ -64,7 +64,19 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
     setIsDragging(false);
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    // Tentar remover do storage se for uma URL do Supabase
+    if (value) {
+      const path = storageService.extractPathFromUrl(value);
+      if (path) {
+        try {
+          await storageService.deleteImage(path);
+        } catch (error) {
+          console.warn("Erro ao remover imagem do storage:", error);
+        }
+      }
+    }
+
     onChange("");
     if (inputRef.current) {
       inputRef.current.value = "";
@@ -84,32 +96,32 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
 
       {/* Estado de Upload em progresso */}
       {isUploading ? (
-        <div className="w-full h-48 rounded-xl border-2 border-dashed border-lovely-accent bg-lovely-accent/10 flex flex-col items-center justify-center gap-3">
-          <div className="p-3 rounded-full bg-lovely-accent/20 text-lovely-accent">
+        <div className="w-full h-48 rounded-xl border-2 border-dashed border-miranda-accent bg-miranda-accent/10 flex flex-col items-center justify-center gap-3">
+          <div className="p-3 rounded-full bg-miranda-accent/20 text-miranda-accent">
             <HiArrowPath className="h-6 w-6 animate-spin" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-lovely-white">
+            <p className="text-sm font-medium text-white">
               Fazendo upload...
             </p>
-            <p className="text-xs text-lovely-white/50 mt-1">
+            <p className="text-xs text-white/50 mt-1">
               Aguarde um momento
             </p>
           </div>
         </div>
       ) : value ? (
         // Preview da imagem
-        <div className="relative group rounded-xl overflow-hidden border border-lovely-secondary/30">
+        <div className="relative group rounded-xl overflow-hidden border border-white/20">
           <img
             src={value}
             alt="Preview"
             className="w-full h-48 object-cover"
           />
-          <div className="absolute inset-0 bg-lovely-primary/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="p-2 rounded-lg bg-lovely-secondary/20 hover:bg-lovely-secondary/30 text-lovely-white transition-colors"
+              className="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
               aria-label="Trocar imagem"
             >
               <HiArrowUpTray className="h-5 w-5" />
@@ -135,25 +147,25 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
           className={cn(
             "w-full h-48 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all duration-300 cursor-pointer",
             isDragging
-              ? "border-lovely-accent bg-lovely-accent/10"
-              : "border-lovely-secondary/30 bg-lovely-secondary/5 hover:border-lovely-secondary/50 hover:bg-lovely-secondary/10"
+              ? "border-miranda-accent bg-miranda-accent/10"
+              : "border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10"
           )}
         >
           <div
             className={cn(
               "p-3 rounded-full transition-colors",
               isDragging
-                ? "bg-lovely-accent/20 text-lovely-accent"
-                : "bg-lovely-secondary/10 text-lovely-secondary"
+                ? "bg-miranda-accent/20 text-miranda-accent"
+                : "bg-miranda-primary/20 text-miranda-primary"
             )}
           >
             <HiPhoto className="h-6 w-6" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-lovely-white">
+            <p className="text-sm font-medium text-white">
               {isDragging ? "Solte a imagem aqui" : "Clique ou arraste uma imagem"}
             </p>
-            <p className="text-xs text-lovely-white/50 mt-1">
+            <p className="text-xs text-white/50 mt-1">
               PNG, JPG ou WebP até 5MB
             </p>
           </div>
