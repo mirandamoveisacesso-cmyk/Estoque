@@ -6,8 +6,8 @@ import {
     type ColumnMapping,
 } from "./gemini.service";
 import { categoriesService } from "./categories.service";
-import { colorsService } from "./colors.service";
-import type { Category, Color, Size } from "@/types/database";
+import { materialsService } from "./materials.service";
+import type { Category, Material, Dimension } from "@/types/database";
 
 // Interface para resultado da importação
 export interface ImportProgress {
@@ -21,7 +21,7 @@ export interface ImportProgress {
 export interface ImportSummary {
     productsCreated: number;
     categoriesCreated: number;
-    colorsCreated: number;
+    materialsCreated: number;
     errors: string[];
 }
 
@@ -81,27 +81,27 @@ export function extractColumns(data: Record<string, unknown>[]): string[] {
  */
 async function getExistingData(): Promise<{
     categories: Category[];
-    colors: Color[];
-    sizes: Size[];
+    materials: Material[];
+    dimensions: Dimension[];
 }> {
     const { data: categories } = await supabase
         .from("categories")
         .select("*")
         .eq("is_active", true);
 
-    const { data: colors } = await supabase
-        .from("colors")
+    const { data: materials } = await supabase
+        .from("materials")
         .select("*");
 
-    const { data: sizes } = await supabase
-        .from("sizes")
+    const { data: dimensions } = await supabase
+        .from("dimensions")
         .select("*")
         .eq("is_active", true);
 
     return {
         categories: (categories as Category[]) || [],
-        colors: (colors as Color[]) || [],
-        sizes: (sizes as Size[]) || [],
+        materials: (materials as Material[]) || [],
+        dimensions: (dimensions as Dimension[]) || [],
     };
 }
 
@@ -116,7 +116,7 @@ export async function executeImport(
     const errors: string[] = [];
     let productsCreated = 0;
     let categoriesCreated = 0;
-    let colorsCreated = 0;
+    let materialsCreated = 0;
 
     const updateProgress = (progress: Partial<ImportProgress>) => {
         onProgress?.({
@@ -132,14 +132,14 @@ export async function executeImport(
     try {
         // 1. Buscar dados existentes
         updateProgress({ status: "parsing", message: "Buscando dados do sistema..." });
-        const { categories, colors, sizes } = await getExistingData();
+        const { categories, materials, dimensions } = await getExistingData();
 
         // 2. Processar com IA
         updateProgress({ status: "processing", message: "Processando com IA..." });
         const result: ImportResult = await processSpreadsheetWithAI(
             rawData,
             categories.map(c => c.name),
-            colors.map(c => ({ name: c.name, hex: c.hex_code })),
+            materials.map(m => ({ name: m.name, hex: m.hex_code || "#888888" })),
             columnMapping
         );
 
@@ -163,25 +163,31 @@ export async function executeImport(
             }
         }
 
-        // 4. Criar novas cores
-        updateProgress({ status: "creating", message: "Criando cores novas..." });
-        const colorMap = new Map<string, string>(
-            colors.map(c => [c.name.toLowerCase(), c.id])
+        // 4. Criar novos materiais
+        updateProgress({ status: "creating", message: "Criando materiais novos..." });
+        const materialMap = new Map<string, string>(
+            materials.map(m => [m.name.toLowerCase(), m.id])
         );
 
-        for (const colorData of result.newColors) {
+        for (const materialData of result.newColors) {
             try {
-                const newColor = await colorsService.create(colorData.name, colorData.hex);
-                colorMap.set(colorData.name.toLowerCase(), newColor.id);
-                colorsCreated++;
+                const newMaterial = await materialsService.create({
+                    name: materialData.name,
+                    type: "other",
+                    hexCode: materialData.hex,
+                    isCustom: true,
+                    displayOrder: 100,
+                });
+                materialMap.set(materialData.name.toLowerCase(), newMaterial.id);
+                materialsCreated++;
             } catch (err) {
-                errors.push(`Erro ao criar cor "${colorData.name}": ${err}`);
+                errors.push(`Erro ao criar material "${materialData.name}": ${err}`);
             }
         }
 
-        // 5. Criar mapa de tamanhos
-        const sizeMap = new Map<string, string>(
-            sizes.map(s => [s.code.toLowerCase(), s.id])
+        // 5. Criar mapa de dimensões
+        const dimensionMap = new Map<string, string>(
+            dimensions.map(d => [d.name.toLowerCase(), d.id])
         );
 
         // 6. Criar produtos
@@ -224,31 +230,31 @@ export async function executeImport(
 
                 const productId = (newProduct as { id: string }).id;
 
-                // Associa tamanhos
-                const sizeIds = product.sizes
-                    .map(s => sizeMap.get(s.toLowerCase()))
+                // Associa dimensões (usa primeira disponível por padrão)
+                const dimensionIds = product.sizes
+                    .map(s => dimensionMap.get(s.toLowerCase()))
                     .filter(Boolean) as string[];
 
-                if (sizeIds.length > 0) {
+                if (dimensionIds.length > 0) {
                     await supabase
-                        .from("product_sizes")
-                        .insert(sizeIds.map(sizeId => ({
+                        .from("product_dimensions")
+                        .insert(dimensionIds.map(dimensionId => ({
                             product_id: productId,
-                            size_id: sizeId,
+                            dimension_id: dimensionId,
                         })) as never[]);
                 }
 
-                // Associa cores
-                const colorIds = product.colors
-                    .map(c => colorMap.get(c.name.toLowerCase()))
+                // Associa materiais
+                const materialIds = product.colors
+                    .map(c => materialMap.get(c.name.toLowerCase()))
                     .filter(Boolean) as string[];
 
-                if (colorIds.length > 0) {
+                if (materialIds.length > 0) {
                     await supabase
-                        .from("product_colors")
-                        .insert(colorIds.map(colorId => ({
+                        .from("product_materials")
+                        .insert(materialIds.map(materialId => ({
                             product_id: productId,
-                            color_id: colorId,
+                            material_id: materialId,
                         })) as never[]);
                 }
 
@@ -269,7 +275,7 @@ export async function executeImport(
     return {
         productsCreated,
         categoriesCreated,
-        colorsCreated,
+        materialsCreated,
         errors,
     };
 }

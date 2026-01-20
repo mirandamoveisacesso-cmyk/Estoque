@@ -6,9 +6,9 @@ import type { PageId } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { 
-  parseFile, 
-  extractColumns, 
+import {
+  parseFile,
+  extractColumns,
   executeImport,
   type ImportProgress,
   type ImportSummary,
@@ -49,14 +49,14 @@ export function ImportPage({ currentPage, onNavigate }: ImportPageProps) {
   const handleFileSelect = useCallback(async (selectedFile: File) => {
     setFile(selectedFile);
     setError(null);
-    
+
     try {
       const data = await parseFile(selectedFile);
       if (data.length === 0) {
         setError("O arquivo está vazio.");
         return;
       }
-      
+
       setRawData(data);
       setColumns(extractColumns(data));
       setStep("mapping");
@@ -79,7 +79,7 @@ export function ImportPage({ currentPage, onNavigate }: ImportPageProps) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
       handleFileSelect(droppedFile);
@@ -98,14 +98,14 @@ export function ImportPage({ currentPage, onNavigate }: ImportPageProps) {
 
     try {
       const columnMappingToUse = mappingMode === "manual" ? mapping : undefined;
-      
+
       setStep("importing");
       const result = await executeImport(
         rawData,
         columnMappingToUse,
         (p) => setProgress(p)
       );
-      
+
       setSummary(result);
       setStep("done");
     } catch (err) {
@@ -178,7 +178,7 @@ export function ImportPage({ currentPage, onNavigate }: ImportPageProps) {
                       className="hidden"
                       id="file-upload"
                     />
-                    <label 
+                    <label
                       htmlFor="file-upload"
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-lovely-secondary/20 text-lovely-secondary font-medium cursor-pointer hover:bg-lovely-secondary/30 transition-colors"
                     >
@@ -251,7 +251,7 @@ export function ImportPage({ currentPage, onNavigate }: ImportPageProps) {
                       A IA detecta as colunas automaticamente
                     </p>
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={() => setMappingMode("manual")}
@@ -404,12 +404,12 @@ export function ImportPage({ currentPage, onNavigate }: ImportPageProps) {
                       </div>
                       <div className="p-3 rounded-lg bg-lovely-secondary/10">
                         <p className="text-2xl font-bold text-lovely-secondary">
-                          {summary?.colorsCreated || 0}
+                          {summary?.materialsCreated || 0}
                         </p>
-                        <p className="text-sm text-lovely-white/60">Cores</p>
+                        <p className="text-sm text-lovely-white/60">Materiais</p>
                       </div>
                     </div>
-                    
+
                     {summary?.errors && summary.errors.length > 0 && (
                       <div className="mb-6 p-4 rounded-lg bg-destructive/10 text-left">
                         <p className="text-sm font-medium text-destructive mb-2">

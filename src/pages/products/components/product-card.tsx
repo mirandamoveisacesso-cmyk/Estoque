@@ -1,7 +1,7 @@
 import { HiPencil, HiTrash, HiCube } from "react-icons/hi2";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useColors } from "@/contexts/colors-context";
+import { useMaterials } from "@/contexts/materials-context";
 import type { Product } from "@/contexts/products-context";
 
 interface ProductCardProps {
@@ -11,11 +11,11 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
-  const { colors } = useColors();
+  const { materials } = useMaterials();
 
-  const getColorHex = (colorName: string): string | undefined => {
-    const color = colors.find((c) => c.name === colorName);
-    return color?.hex;
+  const getMaterialHex = (materialName: string): string | undefined => {
+    const material = materials.find((m) => m.name === materialName);
+    return material?.hexCode;
   };
 
   return (
@@ -68,40 +68,50 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
         </h3>
 
         {/* Preço */}
-        <p className="text-base font-bold text-lovely-secondary">
-          {(product.price ?? 0).toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-base font-bold text-lovely-secondary">
+            {(product.price ?? 0).toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </p>
+          {product.discountPrice && (
+            <p className="text-xs text-green-400">
+              À vista: {product.discountPrice.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </p>
+          )}
+        </div>
 
-        {/* Tamanhos */}
+        {/* Dimensões */}
         <div className="flex flex-wrap gap-1">
-          {product.sizes.slice(0, 4).map((size) => (
-            <Badge key={size} variant="outline" className="text-[10px] px-1.5 py-0.5">
-              {size}
+          {product.dimensions.slice(0, 4).map((dimension) => (
+            <Badge key={dimension} variant="outline" className="text-[10px] px-1.5 py-0.5">
+              {dimension}
             </Badge>
           ))}
-          {product.sizes.length > 4 && (
+          {product.dimensions.length > 4 && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
-              +{product.sizes.length - 4}
+              +{product.dimensions.length - 4}
             </Badge>
           )}
         </div>
 
-        {/* Cores */}
+        {/* Materiais */}
         <div className="flex items-center gap-1">
-          {product.colors.slice(0, 4).map((colorName) => (
+          {product.materials.slice(0, 4).map((materialName) => (
             <span
-              key={colorName}
+              key={materialName}
               className="w-4 h-4 rounded-full border border-lovely-white/20 shadow-sm"
-              style={{ backgroundColor: getColorHex(colorName) || "#888" }}
-              title={colorName}
+              style={{ backgroundColor: getMaterialHex(materialName) || "#888" }}
+              title={materialName}
             />
           ))}
-          {product.colors.length > 4 && (
+          {product.materials.length > 4 && (
             <span className="text-xs text-lovely-white/60">
-              +{product.colors.length - 4}
+              +{product.materials.length - 4}
             </span>
           )}
         </div>
