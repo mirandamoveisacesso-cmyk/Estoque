@@ -4,7 +4,6 @@ import { ProductsProvider } from "@/contexts/products-context";
 import { CategoriesProvider } from "@/contexts/categories-context";
 import { MaterialsProvider } from "@/contexts/materials-context";
 import { DimensionsProvider } from "@/contexts/dimensions-context";
-import { ThemeProvider } from "@/contexts/theme-context";
 import { LoginPage } from "@/pages/login";
 import { ProductsPage } from "@/pages/products";
 import { CategoriesPage } from "@/pages/categories";
@@ -21,7 +20,7 @@ function AppContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center">
-        <HiArrowPath className="h-8 w-8 animate-spin text-amber-600" />
+        <HiArrowPath className="h-8 w-8 animate-spin text-miranda-primary" />
       </div>
     );
   }
@@ -86,11 +85,9 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
