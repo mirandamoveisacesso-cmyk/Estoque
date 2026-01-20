@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Google Fonts - Space Grotesk */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+/* 
+  Paleta de Cores Lovely:
+  - Primary (Deep Plum): #3e1126
+  - Secondary (Soft Pink): #ea9fc2
+  - Accent/CTA (Burnt Orange): #d58124
+  - White: #ffffff
+*/
+
+:root {
+  /* Fonte principal */
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+
+  color-scheme: dark;
+  color: #ffffff;
+  background-color: #3e1126;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Cores Lovely */
+  --lovely-primary: #3e1126;
+  --lovely-secondary: #ea9fc2;
+  --lovely-accent: #d58124;
+  --lovely-white: #ffffff;
+
+  /* Shadcn Variables - Mapeadas para Lovely */
+  --background: #3e1126;
+  --foreground: #ffffff;
+  --card: rgba(234, 159, 194, 0.08);
+  --card-foreground: #ffffff;
+  --popover: #3e1126;
+  --popover-foreground: #ffffff;
+  --primary: #d58124;
+  --primary-foreground: #ffffff;
+  --secondary: #ea9fc2;
+  --secondary-foreground: #3e1126;
+  --muted: rgba(234, 159, 194, 0.15);
+  --muted-foreground: rgba(255, 255, 255, 0.7);
+  --accent: #ea9fc2;
+  --accent-foreground: #3e1126;
+  --destructive: #ef4444;
+  --border: rgba(234, 159, 194, 0.25);
+  --input: rgba(234, 159, 194, 0.15);
+  --ring: #ea9fc2;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+/* Links */
+a {
+  font-weight: 500;
+  color: var(--lovely-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--lovely-accent);
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+/* Tailwind Theme */
+@theme inline {
+  --font-sans: 'Space Grotesk', system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Cores Lovely no Tailwind - usando variáveis dinâmicas */
+  --color-lovely-primary: var(--lovely-primary);
+  --color-lovely-secondary: var(--lovely-secondary);
+  --color-lovely-accent: var(--lovely-accent);
+  --color-lovely-white: var(--lovely-white, #ffffff);
+
+  /* Shadcn Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans;
+    background-color: var(--lovely-primary);
+    color: var(--lovely-text, #ffffff);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
