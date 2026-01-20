@@ -1,29 +1,30 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Google Fonts - Space Grotesk */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/* Google Fonts - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 /* 
-  Paleta de Cores Lovely:
-  - Primary (Deep Plum): #3e1126
-  - Secondary (Soft Pink): #ea9fc2
-  - Accent/CTA (Burnt Orange): #d58124
-  - White: #ffffff
+  Paleta de Cores Miranda Móveis:
+  - Primary (Vermelho): #E31E24
+  - Secondary (Branco): #ffffff
+  - Accent (Amarelo/Laranja): #F5A623
+  - Background Dark: #1a1a1a
+  - Text Light: #ffffff
 */
 
 :root {
   /* Fonte principal */
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   letter-spacing: -0.01em;
 
   color-scheme: dark;
   color: #ffffff;
-  background-color: #3e1126;
+  background-color: #1a1a1a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -33,31 +34,39 @@
   /* Radius */
   --radius: 0.75rem;
 
-  /* Cores Lovely */
-  --lovely-primary: #3e1126;
-  --lovely-secondary: #ea9fc2;
-  --lovely-accent: #d58124;
-  --lovely-white: #ffffff;
+  /* Cores Miranda Móveis */
+  --miranda-primary: #E31E24;
+  --miranda-secondary: #ffffff;
+  --miranda-accent: #F5A623;
+  --miranda-dark: #1a1a1a;
+  --miranda-gray: #2d2d2d;
+  --miranda-white: #ffffff;
 
-  /* Shadcn Variables - Mapeadas para Lovely */
-  --background: #3e1126;
+  /* Shadcn Variables - Mapeadas para Miranda */
+  --background: #1a1a1a;
   --foreground: #ffffff;
-  --card: rgba(234, 159, 194, 0.08);
+  --card: rgba(255, 255, 255, 0.05);
   --card-foreground: #ffffff;
-  --popover: #3e1126;
+  --popover: #1a1a1a;
   --popover-foreground: #ffffff;
-  --primary: #d58124;
+  --primary: #E31E24;
   --primary-foreground: #ffffff;
-  --secondary: #ea9fc2;
-  --secondary-foreground: #3e1126;
-  --muted: rgba(234, 159, 194, 0.15);
+  --secondary: #2d2d2d;
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.1);
   --muted-foreground: rgba(255, 255, 255, 0.7);
-  --accent: #ea9fc2;
-  --accent-foreground: #3e1126;
+  --accent: #F5A623;
+  --accent-foreground: #1a1a1a;
   --destructive: #ef4444;
-  --border: rgba(234, 159, 194, 0.25);
-  --input: rgba(234, 159, 194, 0.15);
-  --ring: #ea9fc2;
+  --border: rgba(255, 255, 255, 0.15);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #E31E24;
+
+  /* Manter compatibilidade com classes lovely- existentes */
+  --lovely-primary: var(--miranda-dark);
+  --lovely-secondary: var(--miranda-primary);
+  --lovely-accent: var(--miranda-accent);
+  --lovely-white: var(--miranda-white);
 }
 
 html,
@@ -75,13 +84,13 @@ body {
 /* Links */
 a {
   font-weight: 500;
-  color: var(--lovely-secondary);
+  color: var(--miranda-primary);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--lovely-accent);
+  color: var(--miranda-accent);
 }
 
 /* Headings */
@@ -110,7 +119,7 @@ h3 {
 
 /* Tailwind Theme */
 @theme inline {
-  --font-sans: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -120,11 +129,19 @@ h3 {
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  /* Cores Lovely no Tailwind - usando variáveis dinâmicas */
-  --color-lovely-primary: var(--lovely-primary);
-  --color-lovely-secondary: var(--lovely-secondary);
-  --color-lovely-accent: var(--lovely-accent);
-  --color-lovely-white: var(--lovely-white, #ffffff);
+  /* Cores Miranda no Tailwind */
+  --color-miranda-primary: var(--miranda-primary);
+  --color-miranda-secondary: var(--miranda-secondary);
+  --color-miranda-accent: var(--miranda-accent);
+  --color-miranda-dark: var(--miranda-dark);
+  --color-miranda-gray: var(--miranda-gray);
+  --color-miranda-white: var(--miranda-white);
+
+  /* Compatibilidade com classes lovely- */
+  --color-lovely-primary: var(--miranda-dark);
+  --color-lovely-secondary: var(--miranda-primary);
+  --color-lovely-accent: var(--miranda-accent);
+  --color-lovely-white: var(--miranda-white, #ffffff);
 
   /* Shadcn Colors */
   --color-background: var(--background);
@@ -154,8 +171,8 @@ h3 {
 
   body {
     @apply font-sans;
-    background-color: var(--lovely-primary);
-    color: var(--lovely-text, #ffffff);
+    background-color: var(--miranda-dark);
+    color: var(--miranda-white);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 }

@@ -3,7 +3,7 @@ import { HiEnvelope, HiLockClosed, HiExclamationCircle } from "react-icons/hi2";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import logoLovely from "@/assets/logo-lovely.webp";
+import logoMiranda from "@/assets/logo-miranda.png";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -40,22 +40,22 @@ export function LoginPage() {
       {/* Card de Login */}
       <article className="relative w-full max-w-md">
         {/* Glassmorphism Card */}
-        <div className="bg-lovely-secondary/5 backdrop-blur-xl border border-lovely-secondary/20 rounded-2xl p-8 shadow-2xl shadow-black/20">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl shadow-black/20">
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <img
-              src={logoLovely}
-              alt="Lovely - Apaixonadas por moda"
-              className="w-48 h-auto drop-shadow-lg"
+              src={logoMiranda}
+              alt="Miranda Móveis - Atacadão de Móveis"
+              className="w-64 h-auto drop-shadow-lg"
             />
           </div>
 
           {/* Título */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-semibold text-lovely-white mb-2">
-              Bem-vinda de volta!
+            <h1 className="text-2xl font-semibold text-white mb-2">
+              Bem-vindo de volta!
             </h1>
-            <p className="text-lovely-white/70 text-sm">
+            <p className="text-white/70 text-sm">
               Acesse o painel administrativo
             </p>
           </div>
@@ -102,8 +102,8 @@ export function LoginPage() {
           </form>
 
           {/* Footer */}
-          <p className="text-center text-lovely-white/50 text-xs mt-8">
-            © {new Date().getFullYear()} Lovely. Todos os direitos reservados.
+          <p className="text-center text-white/50 text-xs mt-8">
+            © {new Date().getFullYear()} Miranda Móveis. Todos os direitos reservados.
           </p>
         </div>
       </article>

@@ -10,7 +10,7 @@ import {
 } from "react-icons/hi2";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
-import logoLovely from "@/assets/logo-lovely.webp";
+import logoMiranda from "@/assets/logo-miranda.png";
 import { motion, AnimatePresence } from "motion/react";
 
 export type PageId = "products" | "categories" | "import" | "settings";
@@ -68,7 +68,7 @@ export function Sidebar({ currentPage, onNavigate, className }: SidebarProps) {
         onClick={() => setIsOpen(true)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed top-4 left-4 z-40 p-2 rounded-lg bg-lovely-secondary/10 border border-lovely-secondary/20 text-lovely-white lg:hidden"
+        className="fixed top-4 left-4 z-40 p-2 rounded-lg bg-miranda-primary/10 border border-miranda-primary/20 text-white lg:hidden"
         aria-label="Abrir menu"
       >
         <HiBars3 className="h-6 w-6" />
@@ -83,7 +83,7 @@ export function Sidebar({ currentPage, onNavigate, className }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-lovely-primary/80 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
@@ -94,7 +94,7 @@ export function Sidebar({ currentPage, onNavigate, className }: SidebarProps) {
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen w-64 flex flex-col",
-          "bg-lovely-secondary/10 border-r border-lovely-secondary/30 shadow-lg shadow-lovely-secondary/5",
+          "bg-miranda-gray border-r border-white/10 shadow-lg",
           "lg:translate-x-0 lg:sticky lg:z-auto lg:h-screen lg:top-0",
           "transition-transform duration-300 ease-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
@@ -102,16 +102,16 @@ export function Sidebar({ currentPage, onNavigate, className }: SidebarProps) {
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-lovely-secondary/20">
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
           <img
-            src={logoLovely}
-            alt="Lovely"
-            className="w-28 h-auto"
+            src={logoMiranda}
+            alt="Miranda Móveis"
+            className="w-36 h-auto"
           />
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg text-lovely-white/70 hover:text-lovely-white hover:bg-lovely-secondary/10 transition-colors lg:hidden"
+            className="p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors lg:hidden"
             aria-label="Fechar menu"
           >
             <HiXMark className="h-5 w-5" />
@@ -131,18 +131,15 @@ export function Sidebar({ currentPage, onNavigate, className }: SidebarProps) {
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-lovely-secondary/20 text-lovely-secondary"
-                    : "text-lovely-white/70 hover:text-lovely-white hover:bg-lovely-secondary/10",
+                    ? "bg-miranda-primary text-white"
+                    : "text-white/70 hover:text-white hover:bg-white/10",
                   item.disabled && "opacity-50 cursor-not-allowed"
                 )}
               >
                 {item.icon}
                 <span className="flex-1 text-left">{item.label}</span>
-                {isActive && (
-                  <p>{'>'}</p>
-                )}
                 {item.disabled && (
-                  <span className="text-xs text-lovely-white/40">Em breve</span>
+                  <span className="text-xs text-white/40">Em breve</span>
                 )}
               </button>
             );
@@ -150,11 +147,11 @@ export function Sidebar({ currentPage, onNavigate, className }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-lovely-secondary/20">
+        <div className="p-3 border-t border-white/10">
           <button
             type="button"
             onClick={logout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-lovely-white/70 hover:text-lovely-white hover:bg-destructive/10 transition-all duration-200"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-destructive/20 transition-all duration-200"
           >
             <HiArrowRightOnRectangle className="h-5 w-5" />
             <span>Sair</span>
