@@ -77,73 +77,6 @@ export interface Database {
                     updated_at?: string;
                 };
             };
-            materials: {
-                Row: {
-                    id: string;
-                    name: string;
-                    type: string;
-                    hex_code: string | null;
-                    description: string | null;
-                    is_custom: boolean;
-                    display_order: number;
-                    created_at: string;
-                    updated_at: string;
-                };
-                Insert: {
-                    id?: string;
-                    name: string;
-                    type: string;
-                    hex_code?: string | null;
-                    description?: string | null;
-                    is_custom?: boolean;
-                    display_order?: number;
-                    created_at?: string;
-                    updated_at?: string;
-                };
-                Update: {
-                    id?: string;
-                    name?: string;
-                    type?: string;
-                    hex_code?: string | null;
-                    description?: string | null;
-                    is_custom?: boolean;
-                    display_order?: number;
-                    created_at?: string;
-                    updated_at?: string;
-                };
-            };
-            dimensions: {
-                Row: {
-                    id: string;
-                    name: string;
-                    width_cm: number | null;
-                    height_cm: number | null;
-                    depth_cm: number | null;
-                    display_order: number;
-                    is_active: boolean;
-                    created_at: string;
-                };
-                Insert: {
-                    id?: string;
-                    name: string;
-                    width_cm?: number | null;
-                    height_cm?: number | null;
-                    depth_cm?: number | null;
-                    display_order?: number;
-                    is_active?: boolean;
-                    created_at?: string;
-                };
-                Update: {
-                    id?: string;
-                    name?: string;
-                    width_cm?: number | null;
-                    height_cm?: number | null;
-                    depth_cm?: number | null;
-                    display_order?: number;
-                    is_active?: boolean;
-                    created_at?: string;
-                };
-            };
             products: {
                 Row: {
                     id: string;
@@ -152,16 +85,20 @@ export interface Database {
                     description: string | null;
                     price: number;
                     discount_price: number | null;
-                    category_id: string;
                     image_url: string | null;
-                    weight_kg: number | null;
-                    warranty_months: number | null;
-                    assembly_required: boolean;
                     is_active: boolean;
                     is_featured: boolean;
-                    stock_status: string;
                     created_at: string;
                     updated_at: string;
+
+                    // New columns
+                    category: string | null;
+                    sector: string | null;
+                    stock_quantity: number;
+                    colors: string | null;
+                    models: string | null;
+                    dimensions: string | null;
+                    is_kit: boolean;
                 };
                 Insert: {
                     id?: string;
@@ -170,16 +107,19 @@ export interface Database {
                     description?: string | null;
                     price: number;
                     discount_price?: number | null;
-                    category_id: string;
                     image_url?: string | null;
-                    weight_kg?: number | null;
-                    warranty_months?: number | null;
-                    assembly_required?: boolean;
                     is_active?: boolean;
                     is_featured?: boolean;
-                    stock_status?: string;
                     created_at?: string;
                     updated_at?: string;
+
+                    category?: string | null;
+                    sector?: string | null;
+                    stock_quantity?: number;
+                    colors?: string | null;
+                    models?: string | null;
+                    dimensions?: string | null;
+                    is_kit?: boolean;
                 };
                 Update: {
                     id?: string;
@@ -188,106 +128,19 @@ export interface Database {
                     description?: string | null;
                     price?: number;
                     discount_price?: number | null;
-                    category_id?: string;
                     image_url?: string | null;
-                    weight_kg?: number | null;
-                    warranty_months?: number | null;
-                    assembly_required?: boolean;
                     is_active?: boolean;
                     is_featured?: boolean;
-                    stock_status?: string;
                     created_at?: string;
                     updated_at?: string;
-                };
-            };
-            product_dimensions: {
-                Row: {
-                    id: string;
-                    product_id: string;
-                    dimension_id: string;
-                    custom_width_cm: number | null;
-                    custom_height_cm: number | null;
-                    custom_depth_cm: number | null;
-                    price_adjustment: number | null;
-                    stock_quantity: number;
-                    created_at: string;
-                };
-                Insert: {
-                    id?: string;
-                    product_id: string;
-                    dimension_id: string;
-                    custom_width_cm?: number | null;
-                    custom_height_cm?: number | null;
-                    custom_depth_cm?: number | null;
-                    price_adjustment?: number | null;
+
+                    category?: string | null;
+                    sector?: string | null;
                     stock_quantity?: number;
-                    created_at?: string;
-                };
-                Update: {
-                    id?: string;
-                    product_id?: string;
-                    dimension_id?: string;
-                    custom_width_cm?: number | null;
-                    custom_height_cm?: number | null;
-                    custom_depth_cm?: number | null;
-                    price_adjustment?: number | null;
-                    stock_quantity?: number;
-                    created_at?: string;
-                };
-            };
-            product_materials: {
-                Row: {
-                    id: string;
-                    product_id: string;
-                    material_id: string;
-                    image_url: string | null;
-                    price_adjustment: number | null;
-                    created_at: string;
-                };
-                Insert: {
-                    id?: string;
-                    product_id: string;
-                    material_id: string;
-                    image_url?: string | null;
-                    price_adjustment?: number | null;
-                    created_at?: string;
-                };
-                Update: {
-                    id?: string;
-                    product_id?: string;
-                    material_id?: string;
-                    image_url?: string | null;
-                    price_adjustment?: number | null;
-                    created_at?: string;
-                };
-            };
-            product_images: {
-                Row: {
-                    id: string;
-                    product_id: string;
-                    image_url: string;
-                    alt_text: string | null;
-                    display_order: number;
-                    is_primary: boolean;
-                    created_at: string;
-                };
-                Insert: {
-                    id?: string;
-                    product_id: string;
-                    image_url: string;
-                    alt_text?: string | null;
-                    display_order?: number;
-                    is_primary?: boolean;
-                    created_at?: string;
-                };
-                Update: {
-                    id?: string;
-                    product_id?: string;
-                    image_url?: string;
-                    alt_text?: string | null;
-                    display_order?: number;
-                    is_primary?: boolean;
-                    created_at?: string;
+                    colors?: string | null;
+                    models?: string | null;
+                    dimensions?: string | null;
+                    is_kit?: boolean;
                 };
             };
             user_settings: {
@@ -344,25 +197,6 @@ export type Category = Tables<"categories">;
 export type CategoryInsert = InsertDTO<"categories">;
 export type CategoryUpdate = UpdateDTO<"categories">;
 
-export type Material = Tables<"materials">;
-export type MaterialInsert = InsertDTO<"materials">;
-export type MaterialUpdate = UpdateDTO<"materials">;
-
-export type Dimension = Tables<"dimensions">;
-export type DimensionInsert = InsertDTO<"dimensions">;
-
 export type Product = Tables<"products">;
 export type ProductInsert = InsertDTO<"products">;
 export type ProductUpdate = UpdateDTO<"products">;
-
-export type ProductDimension = Tables<"product_dimensions">;
-export type ProductMaterial = Tables<"product_materials">;
-export type ProductImage = Tables<"product_images">;
-
-// Produto com relacionamentos expandidos
-export interface ProductWithRelations extends Product {
-    category?: Category;
-    dimensions?: Dimension[];
-    materials?: Material[];
-    images?: ProductImage[];
-}

@@ -11,48 +11,35 @@ import {
   type CreateProductDTO,
   type UpdateProductDTO,
 } from "@/services/products.service";
-import type { ProductWithRelations } from "@/types/database";
+import type { Product as DBProduct } from "@/types/database";
 
-// Interface para manter compatibilidade com o código anterior
-export interface Product {
-  id: string;
-  name: string;
-  category: string; // Nome da categoria
-  categoryId: string; // ID da categoria
-  description: string;
-  price: number;
-  discountPrice?: number; // Novo: preço à vista
-  dimensions: string[]; // Array de nomes de dimensões
-  materials: string[]; // Array de nomes de materiais
-  weightKg?: number; // Novo: peso em kg
-  warrantyMonths?: number; // Novo: garantia em meses
-  assemblyRequired?: boolean; // Novo: requer montagem
-  imageUrls: string[]; // Múltiplas imagens
-  createdAt: Date;
-  updatedAt: Date;
+// Interface compatível com o frontend
+export interface Product extends DBProduct {
+  // Campos adicionais de UI se necessário, mas por enquanto vamos estender o DBProduct
+  // O DBProduct já tem tudo que precisamos: name, category, sector, etc.
 }
 
 export interface ProductFormData {
   name: string;
-  category: string; // Nome da categoria
-  categoryId: string; // ID da categoria
+  category: string;
+  sector: string;
   description: string;
   price: number;
   discountPrice?: number;
-  dimensions: string[]; // Nomes ou IDs
-  materials: string[]; // Nomes ou IDs
-  weightKg?: number;
-  warrantyMonths?: number;
-  assemblyRequired?: boolean;
-  imageUrls: string[]; // Múltiplas imagens
+  stockQuantity: number;
+  colors: string;
+  models: string;
+  dimensions: string;
+  isKit: boolean;
+  imageUrls: string[]; // Múltiplas urls no form, mas salvaremos apenas a primeira no banco por enquanto
 }
 
 interface ProductsContextType {
   products: Product[];
   isLoading: boolean;
   error: string | null;
-  addProduct: (data: ProductFormData, dimensionIds: string[], materialIds: string[]) => Promise<void>;
-  updateProduct: (id: string, data: ProductFormData, dimensionIds: string[], materialIds: string[]) => Promise<void>;
+  addProduct: (data: ProductFormData) => Promise<void>;
+  updateProduct: (id: string, data: ProductFormData) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   getProductById: (id: string) => Product | undefined;
   refreshProducts: () => Promise<void>;
@@ -60,26 +47,10 @@ interface ProductsContextType {
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
-// Converte ProductWithRelations para o formato Product legado
-function toProduct(p: ProductWithRelations): Product {
-  return {
-    id: p.id,
-    name: p.name,
-    category: p.category?.name || "",
-    categoryId: p.category_id,
-    description: p.description || "",
-    price: p.price,
-    discountPrice: p.discount_price ?? undefined,
-    dimensions: (p.dimensions || []).map((d) => d.name),
-    materials: (p.materials || []).map((m) => m.name),
-    weightKg: p.weight_kg ?? undefined,
-    warrantyMonths: p.warranty_months ?? undefined,
-    assemblyRequired: p.assembly_required,
-    imageUrls: p.image_url ? [p.image_url] : [], // Compatibilidade com campo único
-    createdAt: new Date(p.created_at),
-    updatedAt: new Date(p.updated_at),
-  };
-}
+// Converte DBProduct para Product (se precisarmos de formatação extra)
+// function toProduct(p: DBProduct): Product {
+//   return p;
+// }
 
 interface ProductsProviderProps {
   children: ReactNode;
@@ -96,7 +67,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
       setIsLoading(true);
       setError(null);
       const data = await productsService.getAll();
-      setProducts(data.map(toProduct));
+      setProducts(data);
     } catch (err) {
       console.error("Erro ao carregar produtos:", err);
       setError("Erro ao carregar produtos");
@@ -111,25 +82,26 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
   }, [fetchProducts]);
 
   const addProduct = useCallback(
-    async (data: ProductFormData, dimensionIds: string[], materialIds: string[]) => {
+    async (data: ProductFormData) => {
       try {
         setError(null);
         const dto: CreateProductDTO = {
           name: data.name,
-          categoryId: data.categoryId,
+          category: data.category,
+          sector: data.sector,
           description: data.description,
           price: data.price,
           discountPrice: data.discountPrice,
           imageUrl: data.imageUrls[0] || "",
-          weightKg: data.weightKg,
-          warrantyMonths: data.warrantyMonths,
-          assemblyRequired: data.assemblyRequired,
-          dimensionIds,
-          materialIds,
+          stockQuantity: data.stockQuantity,
+          colors: data.colors,
+          models: data.models,
+          dimensions: data.dimensions,
+          isKit: data.isKit,
         };
 
         const newProduct = await productsService.create(dto);
-        setProducts((prev) => [toProduct(newProduct), ...prev]);
+        setProducts((prev) => [newProduct, ...prev]);
       } catch (err) {
         console.error("Erro ao criar produto:", err);
         setError("Erro ao criar produto");
@@ -140,26 +112,27 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
   );
 
   const updateProduct = useCallback(
-    async (id: string, data: ProductFormData, dimensionIds: string[], materialIds: string[]) => {
+    async (id: string, data: ProductFormData) => {
       try {
         setError(null);
         const dto: UpdateProductDTO = {
           name: data.name,
-          categoryId: data.categoryId,
+          category: data.category,
+          sector: data.sector,
           description: data.description,
           price: data.price,
           discountPrice: data.discountPrice,
           imageUrl: data.imageUrls[0] || "",
-          weightKg: data.weightKg,
-          warrantyMonths: data.warrantyMonths,
-          assemblyRequired: data.assemblyRequired,
-          dimensionIds,
-          materialIds,
+          stockQuantity: data.stockQuantity,
+          colors: data.colors,
+          models: data.models,
+          dimensions: data.dimensions,
+          isKit: data.isKit,
         };
 
         const updated = await productsService.update(id, dto);
         setProducts((prev) =>
-          prev.map((p) => (p.id === id ? toProduct(updated) : p))
+          prev.map((p) => (p.id === id ? updated : p))
         );
       } catch (err) {
         console.error("Erro ao atualizar produto:", err);

@@ -1,7 +1,6 @@
 import { HiPencil, HiTrash, HiCube } from "react-icons/hi2";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useMaterials } from "@/contexts/materials-context";
 import type { Product } from "@/contexts/products-context";
 
 interface ProductCardProps {
@@ -11,20 +10,18 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
-  const { materials } = useMaterials();
-
-  const getMaterialHex = (materialName: string): string | undefined => {
-    const material = materials.find((m) => m.name === materialName);
-    return material?.hexCode;
-  };
+  // Parsing text fields to arrays for display if they are comma separated
+  const colors = product.colors ? product.colors.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const models = product.models ? product.models.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const dimensions = product.dimensions ? product.dimensions.split(',').map(s => s.trim()).filter(Boolean) : [];
 
   return (
     <Card className="group overflow-hidden hover:border-lovely-secondary/40 hover:shadow-xl hover:shadow-lovely-secondary/5 transition-all duration-300">
       {/* Imagem */}
       <div className="relative aspect-square overflow-hidden bg-lovely-secondary/5">
-        {product.imageUrls[0] ? (
+        {product.image_url ? (
           <img
-            src={product.imageUrls[0]}
+            src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -59,7 +56,7 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
       <div className="p-3 space-y-2">
         {/* Categoria */}
         <span className="text-[11px] font-medium text-lovely-accent uppercase tracking-wide">
-          {product.category}
+          {product.category || "Sem categoria"}
         </span>
 
         {/* Nome */}
@@ -75,9 +72,9 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
               currency: "BRL",
             })}
           </p>
-          {product.discountPrice && (
+          {product.discount_price && (
             <p className="text-xs text-green-400">
-              À vista: {product.discountPrice.toLocaleString("pt-BR", {
+              À vista: {product.discount_price.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
               })}
@@ -85,36 +82,44 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
           )}
         </div>
 
-        {/* Dimensões */}
-        <div className="flex flex-wrap gap-1">
-          {product.dimensions.slice(0, 4).map((dimension) => (
-            <Badge key={dimension} variant="outline" className="text-[10px] px-1.5 py-0.5">
-              {dimension}
-            </Badge>
-          ))}
-          {product.dimensions.length > 4 && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
-              +{product.dimensions.length - 4}
-            </Badge>
-          )}
+        {/* Cores (Badge) */}
+        {colors.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {colors.slice(0, 3).map((color, i) => (
+              <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0.5 border-lovely-secondary/30 text-lovely-white/70">
+                {color}
+              </Badge>
+            ))}
+            {colors.length > 3 && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-lovely-secondary/30 text-lovely-white/70">
+                +{colors.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Estoque */}
+        <div className="text-[10px] text-lovely-white/50">
+          Estoque: {product.stock_quantity || 0}
         </div>
 
-        {/* Materiais */}
-        <div className="flex items-center gap-1">
-          {product.materials.slice(0, 4).map((materialName) => (
-            <span
-              key={materialName}
-              className="w-4 h-4 rounded-full border border-lovely-white/20 shadow-sm"
-              style={{ backgroundColor: getMaterialHex(materialName) || "#888" }}
-              title={materialName}
-            />
-          ))}
-          {product.materials.length > 4 && (
-            <span className="text-xs text-lovely-white/60">
-              +{product.materials.length - 4}
-            </span>
-          )}
-        </div>
+        {/* Dimensões */}
+        {dimensions.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {dimensions.slice(0, 2).map((dim, i) => (
+              <Badge key={i} variant="outline" className="text-[9px] px-1 py-0 border-lovely-white/20 text-lovely-white/60">
+                {dim}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Modelos */}
+        {models.length > 0 && (
+          <div className="text-[10px] text-lovely-white/50 mt-1 truncate">
+            {models.join(", ")}
+          </div>
+        )}
       </div>
     </Card>
   );
