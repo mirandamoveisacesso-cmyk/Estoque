@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { VideoUpload } from "@/components/ui/video-upload";
 import { useProducts, type Product, type ProductFormData } from "@/contexts/products-context";
 
 interface ProductFormProps {
@@ -95,16 +96,14 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
         />
       </div>
 
-      {/* Video URL */}
+      {/* Video Upload */}
       <div>
-        <label htmlFor="videoUrl" className="block text-sm font-medium text-lovely-white mb-2">
-          Link do Vídeo (YouTube/Vimeo)
+        <label className="block text-sm font-medium text-lovely-white mb-2">
+          Vídeo do Produto
         </label>
-        <Input
-          id="videoUrl"
-          value={formData.videoUrl || ""}
-          onChange={(e) => handleChange("videoUrl", e.target.value)}
-          placeholder="https://..."
+        <VideoUpload
+          value={formData.videoUrl || null}
+          onChange={(url) => handleChange("videoUrl", url)}
         />
       </div>
 

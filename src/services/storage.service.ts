@@ -22,6 +22,7 @@ export interface UploadResponse {
 
 const BUCKET_NAME = "products";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 
 // ============================================================================
 // FUNÇÕES AUXILIARES
@@ -165,15 +166,58 @@ async function uploadImage(
 }
 
 /**
- * Remove uma imagem do Supabase Storage
+ * Faz upload de um vídeo para o Supabase Storage
  */
-async function deleteImage(path: string): Promise<void> {
+async function uploadVideo(file: File): Promise<UploadResponse> {
+    // Validar tamanho
+    if (file.size > MAX_VIDEO_SIZE) {
+        throw new Error(`O vídeo deve ter no máximo ${MAX_VIDEO_SIZE / 1024 / 1024}MB`);
+    }
+
+    // Validar tipo (opcional, mas recomendado)
+    if (!file.type.startsWith("video/")) {
+        throw new Error("O arquivo deve ser um vídeo");
+    }
+
+    // Gerar nome único
+    const fileName = generateFileName(file.name);
+    const filePath = `uploads/videos/${fileName}`;
+
+    // Upload para Supabase Storage
+    const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+        });
+
+    if (error) {
+        throw new Error(`Erro no upload: ${error.message}`);
+    }
+
+    // Obter URL pública
+    const { data: urlData } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(data.path);
+
+    return {
+        url: urlData.publicUrl,
+        path: data.path,
+        size: file.size,
+        type: file.type,
+    };
+}
+
+/**
+ * Remove um arquivo (imagem ou vídeo) do Supabase Storage
+ */
+async function deleteFile(path: string): Promise<void> {
     const { error } = await supabase.storage
         .from(BUCKET_NAME)
         .remove([path]);
 
     if (error) {
-        throw new Error(`Erro ao remover imagem: ${error.message}`);
+        throw new Error(`Erro ao remover arquivo: ${error.message}`);
     }
 }
 
@@ -184,6 +228,7 @@ function extractPathFromUrl(url: string): string | null {
     if (!url.includes("supabase")) return null;
 
     // Formato: https://xxx.supabase.co/storage/v1/object/public/products/uploads/filename.webp
+    // ou uploads/videos/filename.mp4
     const regex = /\/storage\/v1\/object\/public\/products\/(.+)$/;
     const match = url.match(regex);
 
@@ -208,7 +253,9 @@ function getThumbnailUrl(url: string, width: number = 200, height: number = 200)
 
 export const storageService = {
     uploadImage,
-    deleteImage,
+    uploadVideo,
+    deleteImage: deleteFile, // Alias para manter compatibilidade
+    deleteFile,
     extractPathFromUrl,
     getThumbnailUrl,
 };
