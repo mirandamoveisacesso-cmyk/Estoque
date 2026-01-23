@@ -26,7 +26,17 @@ ALTER TABLE products
     ADD COLUMN IF NOT EXISTS models TEXT,
     ADD COLUMN IF NOT EXISTS price NUMERIC(10, 2), -- Ensure it exists (was DECIMAL)
     ADD COLUMN IF NOT EXISTS dimensions TEXT, -- renamed from implicit relation to text field
-    ADD COLUMN IF NOT EXISTS is_kit BOOLEAN DEFAULT FALSE;
+    ADD COLUMN IF NOT EXISTS is_kit BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS image_urls TEXT[] DEFAULT '{}',
+    ADD COLUMN IF NOT EXISTS video_url TEXT;
+
+-- Migrate existing image_url to image_urls if applicable (and if not already done)
+UPDATE products 
+SET image_urls = ARRAY[image_url] 
+WHERE image_url IS NOT NULL AND (image_urls IS NULL OR array_length(image_urls, 1) IS NULL);
+
+-- Deprecate old column (optional, but keeping it for now to avoid immediate breakage if referenced elsewhere)
+-- We will stop writing to it in the service layer.
 
 -- 3. Update comments
 COMMENT ON TABLE products IS 'Tabela única de produtos com estrutura simplificada';

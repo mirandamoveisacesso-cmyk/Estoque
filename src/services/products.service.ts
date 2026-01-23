@@ -21,7 +21,8 @@ export interface CreateProductDTO {
     description?: string;
     price: number;
     discountPrice?: number;
-    imageUrl?: string;
+    imageUrls?: string[]; // Renamed from imageUrl
+    videoUrl?: string;
 
     // Novos campos
     category: string;
@@ -39,7 +40,8 @@ export interface UpdateProductDTO {
     description?: string;
     price?: number;
     discountPrice?: number;
-    imageUrl?: string;
+    imageUrls?: string[]; // Renamed from imageUrl
+    videoUrl?: string;
 
     // Novos campos
     category?: string;
@@ -99,7 +101,10 @@ export const productsService = {
             description: dto.description || null,
             price: dto.price,
             discount_price: dto.discountPrice || null,
-            image_url: dto.imageUrl || null,
+            // Mantendo compatibilidade por enquanto (primeira imagem)
+            image_url: dto.imageUrls?.[0] || null,
+            image_urls: dto.imageUrls || [],
+            video_url: dto.videoUrl || null,
 
             category: dto.category,
             sector: dto.sector,
@@ -137,7 +142,12 @@ export const productsService = {
         if (dto.description !== undefined) updateData.description = dto.description;
         if (dto.price !== undefined) updateData.price = dto.price;
         if (dto.discountPrice !== undefined) updateData.discount_price = dto.discountPrice;
-        if (dto.imageUrl !== undefined) updateData.image_url = dto.imageUrl;
+
+        if (dto.imageUrls !== undefined) {
+            updateData.image_urls = dto.imageUrls;
+            updateData.image_url = dto.imageUrls[0] || null; // Compatibilidade
+        }
+        if (dto.videoUrl !== undefined) updateData.video_url = dto.videoUrl;
 
         if (dto.category !== undefined) updateData.category = dto.category;
         if (dto.sector !== undefined) updateData.sector = dto.sector;

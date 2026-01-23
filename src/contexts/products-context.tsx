@@ -31,7 +31,8 @@ export interface ProductFormData {
   models: string;
   dimensions: string;
   isKit: boolean;
-  imageUrls: string[]; // Múltiplas urls no form, mas salvaremos apenas a primeira no banco por enquanto
+  imageUrls: string[];
+  videoUrl?: string; // New field
 }
 
 interface ProductsContextType {
@@ -92,7 +93,8 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           description: data.description,
           price: data.price,
           discountPrice: data.discountPrice,
-          imageUrl: data.imageUrls[0] || "",
+          imageUrls: data.imageUrls,
+          videoUrl: data.videoUrl,
           stockQuantity: data.stockQuantity,
           colors: data.colors,
           models: data.models,
@@ -122,7 +124,8 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           description: data.description,
           price: data.price,
           discountPrice: data.discountPrice,
-          imageUrl: data.imageUrls[0] || "",
+          imageUrls: data.imageUrls,
+          videoUrl: data.videoUrl,
           stockQuantity: data.stockQuantity,
           colors: data.colors,
           models: data.models,

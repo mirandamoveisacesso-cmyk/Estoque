@@ -19,9 +19,9 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
     <Card className="group overflow-hidden hover:border-lovely-secondary/40 hover:shadow-xl hover:shadow-lovely-secondary/5 transition-all duration-300">
       {/* Imagem */}
       <div className="relative aspect-square overflow-hidden bg-lovely-secondary/5">
-        {product.image_url ? (
+        {(product.image_urls?.[0] || product.image_url) ? (
           <img
-            src={product.image_url}
+            src={product.image_urls?.[0] || product.image_url || ""}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />

@@ -28,7 +28,12 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     models: product?.models || "",
     dimensions: product?.dimensions || "",
     isKit: product?.is_kit || false,
-    imageUrls: product?.image_url ? [product.image_url] : [],
+    imageUrls: product?.image_urls?.length
+      ? product.image_urls
+      : product?.image_url
+        ? [product.image_url]
+        : [],
+    videoUrl: product?.video_url || "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,11 +86,25 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
       {/* Imagem */}
       <div>
         <label className="block text-sm font-medium text-lovely-white mb-2">
-          Imagem do Produto
+          Imagens do Produto (Máx. 5)
         </label>
         <ImageUpload
           value={formData.imageUrls}
           onChange={(urls) => handleChange("imageUrls", urls)}
+          maxImages={5}
+        />
+      </div>
+
+      {/* Video URL */}
+      <div>
+        <label htmlFor="videoUrl" className="block text-sm font-medium text-lovely-white mb-2">
+          Link do Vídeo (YouTube/Vimeo)
+        </label>
+        <Input
+          id="videoUrl"
+          value={formData.videoUrl || ""}
+          onChange={(e) => handleChange("videoUrl", e.target.value)}
+          placeholder="https://..."
         />
       </div>
 
