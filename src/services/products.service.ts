@@ -27,6 +27,7 @@ export interface CreateProductDTO {
     // Novos campos
     category: string;
     sector: string;
+    sku?: string;
     stockQuantity: number;
     colors: string;
     models: string;
@@ -47,6 +48,7 @@ export interface UpdateProductDTO {
     // Novos campos
     category?: string;
     sector?: string;
+    sku?: string;
     stockQuantity?: number;
     colors?: string;
     models?: string;
@@ -110,6 +112,7 @@ export const productsService = {
 
             category: dto.category,
             sector: dto.sector,
+            sku: dto.sku || null,
             stock_quantity: dto.stockQuantity,
             colors: dto.colors,
             models: dto.models,
@@ -154,6 +157,7 @@ export const productsService = {
 
         if (dto.category !== undefined) updateData.category = dto.category;
         if (dto.sector !== undefined) updateData.sector = dto.sector;
+        if (dto.sku !== undefined) updateData.sku = dto.sku;
         if (dto.stockQuantity !== undefined) updateData.stock_quantity = dto.stockQuantity;
         if (dto.colors !== undefined) updateData.colors = dto.colors;
         if (dto.models !== undefined) updateData.models = dto.models;

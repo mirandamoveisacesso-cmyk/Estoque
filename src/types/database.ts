@@ -102,6 +102,7 @@ export interface Database {
                     image_urls: string[] | null;
                     video_url: string | null;
                     seo_slug: string | null;
+                    sku: string | null;
                 };
                 Insert: {
                     id?: string;
@@ -126,6 +127,7 @@ export interface Database {
                     image_urls?: string[] | null;
                     video_url?: string | null;
                     seo_slug?: string | null;
+                    sku?: string | null;
                 };
                 Update: {
                     id?: string;
@@ -150,6 +152,7 @@ export interface Database {
                     image_urls?: string[] | null;
                     video_url?: string | null;
                     seo_slug?: string | null;
+                    sku?: string | null;
                 };
             };
             user_settings: {

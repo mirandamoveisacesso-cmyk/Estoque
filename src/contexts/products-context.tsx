@@ -33,6 +33,7 @@ export interface ProductFormData {
   isKit: boolean;
   imageUrls: string[];
   videoUrl?: string; // New field
+  sku?: string; // New field
   seoKeys: string[]; // Frontend handles as array of tags
 }
 
@@ -96,6 +97,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           discountPrice: data.discountPrice,
           imageUrls: data.imageUrls,
           videoUrl: data.videoUrl,
+          sku: data.sku,
           stockQuantity: data.stockQuantity,
           colors: data.colors,
           models: data.models,
@@ -128,6 +130,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           discountPrice: data.discountPrice,
           imageUrls: data.imageUrls,
           videoUrl: data.videoUrl,
+          sku: data.sku,
           stockQuantity: data.stockQuantity,
           colors: data.colors,
           models: data.models,

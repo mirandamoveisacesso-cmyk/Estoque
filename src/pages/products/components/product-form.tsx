@@ -38,6 +38,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
         ? [product.image_url]
         : [],
     videoUrl: product?.video_url || "",
+    sku: product?.sku || "", // New field
     seoKeys: product?.seo_slug ? product.seo_slug.split("-") : [],
   });
 
@@ -168,8 +169,19 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
         />
       </div>
 
-      {/* Categoria e Setor */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Categoria e Setor e SKU */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label htmlFor="sku" className="block text-sm font-medium text-lovely-white mb-2">
+            SKU (Código)
+          </label>
+          <Input
+            id="sku"
+            value={formData.sku || ""}
+            onChange={(e) => handleChange("sku", e.target.value)}
+            placeholder="Ex: SOFA-001"
+          />
+        </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-lovely-white mb-2">
             Categoria *
