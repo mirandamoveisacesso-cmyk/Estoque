@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from "react";
+import { HiSparkles } from "react-icons/hi2";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { VideoUpload } from "@/components/ui/video-upload";
+import { TagInput } from "@/components/ui/tag-input";
 import { useProducts, type Product, type ProductFormData } from "@/contexts/products-context";
+import { generateSeoSlug, isGeminiConfigured } from "@/services/gemini.service";
 
 interface ProductFormProps {
   product: Product | null;
@@ -35,9 +38,11 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
         ? [product.image_url]
         : [],
     videoUrl: product?.video_url || "",
+    seoKeys: product?.seo_slug ? product.seo_slug.split("-") : [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingSeo, setIsGeneratingSeo] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = (): boolean => {
@@ -79,6 +84,29 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleGenerateSeo = async () => {
+    if (!formData.description && !formData.imageUrls.length) {
+      // Feedback visual se não tiver dados
+      return;
+    }
+
+    setIsGeneratingSeo(true);
+    try {
+      // Usa a primeira imagem se disponível
+      const result = await generateSeoSlug(formData.description, formData.imageUrls[0]);
+      if (result) {
+        const newTags = result.split("-").filter(Boolean);
+        // Combina com tags existentes sem duplicatas
+        const uniqueTags = Array.from(new Set([...formData.seoKeys, ...newTags]));
+        handleChange("seoKeys", uniqueTags);
+      }
+    } catch (error) {
+      console.error("Erro ao gerar SEO:", error);
+    } finally {
+      setIsGeneratingSeo(false);
     }
   };
 
@@ -253,6 +281,39 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
           placeholder="Descreva o produto..."
           rows={3}
         />
+      </div>
+
+      {/* SEO Tags */}
+      <div className="rounded-xl bg-lovely-secondary/5 p-4 border border-lovely-secondary/10">
+        <div className="flex items-center justify-between mb-3">
+          <label className="block text-sm font-medium text-lovely-white">
+            Tags de SEO (Slug)
+          </label>
+          {isGeminiConfigured() && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleGenerateSeo}
+              isLoading={isGeneratingSeo}
+              disabled={!formData.description && !formData.imageUrls.length}
+              className="h-7 text-xs gap-1.5 border-lovely-secondary/30 hover:bg-lovely-secondary/10 hover:text-lovely-secondary"
+            >
+              <HiSparkles className="h-3.5 w-3.5" />
+              Gerar com IA
+            </Button>
+          )}
+        </div>
+
+        <TagInput
+          tags={formData.seoKeys}
+          onChange={(tags) => handleChange("seoKeys", tags)}
+          placeholder="Digite e pressione Enter..."
+          className="bg-card/50"
+        />
+        <p className="mt-2 text-xs text-lovely-white/50">
+          Essas tags serão convertidas em um slug para melhor indexação (ex: sofa-retratil-azul).
+        </p>
       </div>
 
       {/* Kit Checkbox */}

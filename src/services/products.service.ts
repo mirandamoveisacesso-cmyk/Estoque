@@ -32,6 +32,7 @@ export interface CreateProductDTO {
     models: string;
     dimensions: string;
     isKit: boolean;
+    seoSlug: string;
 }
 
 // Interface para atualização de produto
@@ -51,6 +52,7 @@ export interface UpdateProductDTO {
     models?: string;
     dimensions?: string;
     isKit?: boolean;
+    seoSlug?: string;
 }
 
 export const productsService = {
@@ -112,7 +114,8 @@ export const productsService = {
             colors: dto.colors,
             models: dto.models,
             dimensions: dto.dimensions,
-            is_kit: dto.isKit
+            is_kit: dto.isKit,
+            seo_slug: dto.seoSlug || null
         };
 
         const { data, error } = await supabase
@@ -156,6 +159,7 @@ export const productsService = {
         if (dto.models !== undefined) updateData.models = dto.models;
         if (dto.dimensions !== undefined) updateData.dimensions = dto.dimensions;
         if (dto.isKit !== undefined) updateData.is_kit = dto.isKit;
+        if (dto.seoSlug !== undefined) updateData.seo_slug = dto.seoSlug;
 
         const { data, error } = await supabase
             .from("products")

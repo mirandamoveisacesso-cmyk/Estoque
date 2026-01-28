@@ -33,6 +33,7 @@ export interface ProductFormData {
   isKit: boolean;
   imageUrls: string[];
   videoUrl?: string; // New field
+  seoKeys: string[]; // Frontend handles as array of tags
 }
 
 interface ProductsContextType {
@@ -100,6 +101,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           models: data.models,
           dimensions: data.dimensions,
           isKit: data.isKit,
+          seoSlug: data.seoKeys.join("-"), // Convert array to slug
         };
 
         const newProduct = await productsService.create(dto);
@@ -131,6 +133,7 @@ export function ProductsProvider({ children }: ProductsProviderProps) {
           models: data.models,
           dimensions: data.dimensions,
           isKit: data.isKit,
+          seoSlug: data.seoKeys.join("-"), // Convert array to slug
         };
 
         const updated = await productsService.update(id, dto);

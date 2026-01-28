@@ -145,6 +145,10 @@ COMMENT ON COLUMN products.warranty_months IS 'Período de garantia em meses';
 COMMENT ON COLUMN products.assembly_required IS 'Se o móvel requer montagem';
 COMMENT ON COLUMN products.stock_status IS 'Status: in_stock, low_stock, out_of_stock, made_to_order';
 
+-- NEW: SEO Slug for AI generation
+ALTER TABLE products ADD COLUMN IF NOT EXISTS seo_slug TEXT;
+COMMENT ON COLUMN products.seo_slug IS 'Slug SEO gerado por IA, separado por hífens';
+
 -- =============================================
 -- TABELA: product_images
 -- Descrição: Galeria de imagens do produto
