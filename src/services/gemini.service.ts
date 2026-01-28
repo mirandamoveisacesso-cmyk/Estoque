@@ -4,6 +4,9 @@ const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
 
 if (!apiKey) {
     console.warn("VITE_GEMINI_API_KEY não configurada. A importação inteligente não funcionará.");
+} else {
+    // Debug log para verificar se a chave está chegando corretamente (mascarada)
+    console.log(`[Gemini Service] API Key carregada. Length: ${apiKey.length}. Starts with: ${apiKey.substring(0, 4)}...`);
 }
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
