@@ -7,7 +7,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { VideoUpload } from "@/components/ui/video-upload";
 import { TagInput } from "@/components/ui/tag-input";
 import { useProducts, type Product, type ProductFormData } from "@/contexts/products-context";
-import { generateSeoSlug, isGeminiConfigured } from "@/services/gemini.service";
+import { extractProductDetails } from "@/services/gemini.service";
 
 interface ProductFormProps {
   product: Product | null;
@@ -42,7 +42,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingSeo, setIsGeneratingSeo] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = (): boolean => {
@@ -87,26 +87,45 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     }
   };
 
-  const handleGenerateSeo = async () => {
-    if (!formData.description && !formData.imageUrls.length) {
-      // Feedback visual se não tiver dados
+  const handleAutoFill = async () => {
+    // Só executa se tiver descrição ou imagem e não estiver analisando
+    if ((!formData.description && !formData.imageUrls.length) || isAnalyzing) {
       return;
     }
 
-    setIsGeneratingSeo(true);
+    // Se todos os campos principais já estiverem preenchidos, talvez não precise rodar
+    // Mas o usuário pode querer atualizar, então vamos rodar sempre que sair do campo descrição se algo mudou?
+    // Por simplificação, rodamos sempre no onBlur da descrição se ela não for vazia.
+
+    setIsAnalyzing(true);
     try {
-      // Usa a primeira imagem se disponível
-      const result = await generateSeoSlug(formData.description, formData.imageUrls[0]);
-      if (result) {
-        const newTags = result.split("-").filter(Boolean);
-        // Combina com tags existentes sem duplicatas
-        const uniqueTags = Array.from(new Set([...formData.seoKeys, ...newTags]));
-        handleChange("seoKeys", uniqueTags);
-      }
+      const details = await extractProductDetails(formData.description, formData.imageUrls[0]);
+
+      setFormData(prev => {
+        const newData = { ...prev };
+
+        // Preenche apenas campos vazios ou atualiza SEO sempre
+        if (!newData.name && details.name) newData.name = details.name;
+        if (!newData.category && details.category) newData.category = details.category;
+        if (!newData.sector && details.sector) newData.sector = details.sector;
+        if ((!newData.price || newData.price === 0) && details.price) newData.price = details.price;
+        if (!newData.colors && details.colors) newData.colors = details.colors;
+        if (!newData.models && details.models) newData.models = details.models;
+        if (!newData.dimensions && details.dimensions) newData.dimensions = details.dimensions;
+
+        // SEO Tags - Mescla com existentes
+        if (details.seoSlug) {
+          const newTags = details.seoSlug.split("-").filter(Boolean);
+          const uniqueTags = Array.from(new Set([...newData.seoKeys, ...newTags]));
+          newData.seoKeys = uniqueTags;
+        }
+
+        return newData;
+      });
     } catch (error) {
-      console.error("Erro ao gerar SEO:", error);
+      console.error("Erro ao analisar produto com IA:", error);
     } finally {
-      setIsGeneratingSeo(false);
+      setIsAnalyzing(false);
     }
   };
 
@@ -271,15 +290,25 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
 
       {/* Descrição */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-lovely-white mb-2">
-          Descrição
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label htmlFor="description" className="block text-sm font-medium text-lovely-white">
+            Descrição
+          </label>
+          {isAnalyzing && (
+            <div className="flex items-center gap-2 text-xs text-lovely-secondary animate-pulse">
+              <HiSparkles className="h-3.5 w-3.5" />
+              Analisando com IA...
+            </div>
+          )}
+        </div>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => handleChange("description", e.target.value)}
+          onBlur={handleAutoFill}
           placeholder="Descreva o produto..."
           rows={3}
+          className={isAnalyzing ? "border-lovely-secondary/50" : ""}
         />
       </div>
 
@@ -289,19 +318,8 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
           <label className="block text-sm font-medium text-lovely-white">
             Tags de SEO (Slug)
           </label>
-          {isGeminiConfigured() && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={handleGenerateSeo}
-              isLoading={isGeneratingSeo}
-              disabled={!formData.description && !formData.imageUrls.length}
-              className="h-7 text-xs gap-1.5 border-lovely-secondary/30 hover:bg-lovely-secondary/10 hover:text-lovely-secondary"
-            >
-              <HiSparkles className="h-3.5 w-3.5" />
-              Gerar com IA
-            </Button>
+          {isAnalyzing && (
+            <span className="text-xs text-lovely-white/50">Gerando...</span>
           )}
         </div>
 
@@ -312,7 +330,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
           className="bg-card/50"
         />
         <p className="mt-2 text-xs text-lovely-white/50">
-          Essas tags serão convertidas em um slug para melhor indexação (ex: sofa-retratil-azul).
+          Essas tags são geradas automaticamente pela IA ou podem ser editadas manualmente.
         </p>
       </div>
 

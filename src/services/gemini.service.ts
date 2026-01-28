@@ -160,14 +160,12 @@ NÃO retorne JSON, Markdown ou explicações. Apenas a string crua.`;
     const parts: any[] = [prompt];
 
     if (imageUrl) {
-        // Se for URL, precisaríamos buscar os bytes. Por simplificação, vamos assumir que o Gemini Vision
-        // funciona melhor com Base64 ou File object.
-        // Como imageUrls aqui são URLs (possivelmente Cloudinary), vamos tentar passar a URL no prompt
-        // ou se possível, converter.
-        // O `gemini-2.0-flash` aceita imagens.
-        // IMPLEMENTAÇÃO ATUAL: Focando na descrição para evitar complexidade de fetch imagem agora,
-        // mas preparado para expansão.
-        // parts.push(imagePart);
+        try {
+            const imagePart = await urlToGenerativePart(imageUrl);
+            parts.push(imagePart);
+        } catch (error) {
+            console.warn("Não foi possível processar a imagem (CORS ou erro de rede). Seguindo apenas com texto.", error);
+        }
     }
 
     try {
@@ -179,4 +177,89 @@ NÃO retorne JSON, Markdown ou explicações. Apenas a string crua.`;
         console.error("Erro ao gerar SEO slug:", error);
         return "";
     }
+}
+
+export interface ExtractedProductDetails {
+    name?: string;
+    category?: string;
+    sector?: string;
+    price?: number;
+    colors?: string;
+    models?: string;
+    dimensions?: string;
+    seoSlug?: string;
+}
+
+/**
+ * Extrai detalhes do produto a partir da descrição e imagem
+ */
+export async function extractProductDetails(
+    description: string,
+    imageUrl?: string
+): Promise<ExtractedProductDetails> {
+    if (!genAI) return {};
+
+    const model: GenerativeModel = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash",
+        generationConfig: {
+            responseMimeType: "application/json",
+        }
+    });
+
+    const prompt = `Analise a descrição e a imagem (se houver) deste produto de móveis.
+Extraia as seguintes informações e retorne um JSON:
+- name: Nome sugerido do produto
+- category: Categoria (ex: Sofás, Mesas, Cadeiras)
+- sector: Setor de uso (ex: Sala de Estar, Cozinha)
+- price: Preço encontrado (número, sem R$)
+- colors: Cores mencionadas (string separada por vírgulas)
+- models: Modelos mencionados (ex: Retrátil, Fixo)
+- dimensions: Dimensões/Medidas (ex: 2.10m, 2.30m)
+- seoSlug: Slug para SEO (palavras-chave separadas por hífen)
+
+Descrição: ${description}
+
+Retorne apenas o JSON. Se não encontrar uma informação, não inclua o campo no JSON.`;
+
+    const parts: any[] = [prompt];
+
+    if (imageUrl) {
+        try {
+            const imagePart = await urlToGenerativePart(imageUrl);
+            parts.push(imagePart);
+        } catch (error) {
+            console.warn("Erro ao processar imagem para extração:", error);
+        }
+    }
+
+    try {
+        const result = await model.generateContent(parts);
+        const response = result.response;
+        return JSON.parse(response.text()) as ExtractedProductDetails;
+    } catch (error) {
+        console.error("Erro ao extrair detalhes com IA:", error);
+        return {};
+    }
+}
+
+async function urlToGenerativePart(url: string): Promise<any> {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+
+    const blob = await response.blob();
+    const base64EncodedDataPromise = new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]);
+        };
+        reader.readAsDataURL(blob);
+    });
+
+    return {
+        inlineData: {
+            data: await base64EncodedDataPromise,
+            mimeType: blob.type || "image/jpeg",
+        },
+    };
 }
