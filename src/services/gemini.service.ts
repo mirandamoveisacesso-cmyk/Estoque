@@ -52,7 +52,7 @@ export async function processSpreadsheetWithAI(
     }
 
     const model: GenerativeModel = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-flash-latest",
         generationConfig: {
             responseMimeType: "application/json",
             temperature: 0.1, // Baixa temperatura para respostas mais consistentes
@@ -150,7 +150,7 @@ export async function generateSeoSlug(
     }
 
     const model: GenerativeModel = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-flash-latest",
     });
 
     const prompt = `Analise a descrição e a imagem (se houver) deste produto.
@@ -203,7 +203,7 @@ export async function extractProductDetails(
     if (!genAI) return {};
 
     const model: GenerativeModel = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-flash-latest",
         generationConfig: {
             responseMimeType: "application/json",
         }
